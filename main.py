@@ -1,6 +1,6 @@
 # main.py
 from services.registration_service import RegistrationService
-from fpdf import FPDF
+from fpdf import FPDF # type: ignore
 import os
 import time
 import sys
@@ -28,6 +28,11 @@ def ai_animation():
     print("Processing Complete!")
 
 def generate_pdf(student_name, department, grades, quiz_results, recommendations, resources):
+    # Create Student Reports directory if it doesn't exist
+    reports_dir = "Student Reports"
+    if not os.path.exists(reports_dir):
+        os.makedirs(reports_dir)
+    
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
@@ -74,7 +79,7 @@ def generate_pdf(student_name, department, grades, quiz_results, recommendations
     else:
         pdf.cell(200, 10, "No recommendations available.", ln=True)
     
-    pdf_file = f"{student_name.replace(' ', '_')}_report.pdf"
+    pdf_file = os.path.join(reports_dir, f"{student_name.replace(' ', '_')}_report.pdf")
     pdf.output(pdf_file)
     return pdf_file
 
@@ -95,6 +100,7 @@ def main():
                     for student in students:
                         print(f"\nName: {student['name']}")
                         print(f"Department: {student['department']}")
+                        print(f"Performance Cluster: {student['cluster']}")
                         print("Grades:")
                         if student['grades']:
                             for course, grade in student['grades'].items():
