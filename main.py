@@ -13,7 +13,8 @@ def print_main_menu():
     print("and receive tailored recommendations for the next trimester.")
     print("\nMain Menu:")
     print("1. Register and Input Grades")
-    print("2. Exit")
+    print("2. View All Students")
+    print("3. Exit")
 
 def ai_animation():
     print("\nAI Processing Results...")
@@ -78,23 +79,41 @@ def generate_pdf(student_name, department, grades, quiz_results, recommendations
     return pdf_file
 
 def main():
+    service = RegistrationService()
     while True:
         print_main_menu()
-        choice = input("\nEnter your choice (1-2): ").strip()
-        if choice == "2":
+        choice = input("\nEnter your choice (1-3): ").strip()
+        if choice == "3":
             print("Exiting SmartReg. Goodbye!")
+            service.close()
             break
-        if choice != "1":
-            print("Invalid choice. Please select 1 or 2.")
+        elif choice == "2":
+            try:
+                students = service.view_all_students()
+                if students:
+                    print("\n=== All Students in Database ===")
+                    for student in students:
+                        print(f"\nName: {student['name']}")
+                        print(f"Department: {student['department']}")
+                        print("Grades:")
+                        if student['grades']:
+                            for course, grade in student['grades'].items():
+                                print(f"  {course}: {grade}")
+                        else:
+                            print("  No grades recorded.")
+                else:
+                    print("\nNo students found in the database.")
+            except Exception as e:
+                print(f"Error retrieving student data: {e}")
             continue
-
-        service = RegistrationService()
+        elif choice != "1":
+            print("Invalid choice. Please select 1, 2, or 3.")
+            continue
 
         print("\n=== Student Registration ===")
         name = input("Enter your name: ").strip()
         if not name:
             print("Error: Name cannot be empty.")
-            service.close()
             continue
         department = "Software Engineering"
 
@@ -103,7 +122,6 @@ def main():
             print(f"Student {name} added with ID: {student_id}")
         except Exception as e:
             print(f"Error adding student: {e}")
-            service.close()
             continue
 
         grades = {}
@@ -158,12 +176,13 @@ def main():
         except Exception as e:
             print(f"Error generating recommendations: {e}")
 
-        service.close()
-
         continue_choice = input("\nWould you like to return to the main menu? (yes/no): ").lower()
         if continue_choice != 'yes':
             print("Exiting SmartReg. Goodbye!")
+            service.close()
             break
+
+    service.close()
 
 if __name__ == "__main__":
     main()

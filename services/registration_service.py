@@ -101,6 +101,29 @@ class RegistrationService:
         score = (correct / 5) * 100
         return score, correct
 
+    def view_all_students(self):
+        query = """
+        SELECT s.student_id, s.first_name, s.last_name, s.department,
+               c.course_name, g.grade
+        FROM students s
+        LEFT JOIN grades g ON s.student_id = g.student_id
+        LEFT JOIN courses c ON g.course_id = c.course_id
+        """
+        results = self.db.execute_query(query, fetch=True)
+        students = {}
+        for row in results:
+            student_id = row['student_id']
+            name = f"{row['first_name']} {row['last_name']}".strip()
+            if student_id not in students:
+                students[student_id] = {
+                    'name': name,
+                    'department': row['department'],
+                    'grades': {}
+                }
+            if row['course_name']:
+                students[student_id]['grades'][row['course_name']] = row['grade']
+        return list(students.values())
+
     def recommend_courses(self, student_id, quiz_results=None):
         query = """
         SELECT c.course_name, g.grade
@@ -138,7 +161,7 @@ class RegistrationService:
         elif python_grade is not None and 'Intro to Python and MySQL' in quiz_results:
             adjusted_grades['python'] = max(python_grade, quiz_results['Intro to Python and MySQL']['score'])
         else:
-                adjusted_grades['python'] = python_grade or 0
+            adjusted_grades['python'] = python_grade or 0
 
         if adjusted_grades['shell'] >= 70 and adjusted_grades['python'] >= 70:
             return ['Object-Oriented Programming', 'Intro to Web Infra']
@@ -150,11 +173,11 @@ class RegistrationService:
             'Intro to Shell and Linux Scripting': [
                 {'type': 'W3Schools', 'title': 'Linux Tutorial', 'link': 'https://www.w3schools.com/linux/'},
                 {'type': 'YouTube', 'title': 'Linux Shell Scripting Tutorial', 'link': 'https://www.youtube.com/watch?v=_n5_2HrV3Zw'},
-                {'type': 'Book', 'title': 'Linux Command Line and Shell Scripting Bible', 'link': 'https://www.amazon.com/Linux-Command-Line-Shell-Scripting-Bible/dp/111898384X'}
+                {'type': 'Book', 'title': 'Linux Command Line and Shell Scripting Bible', 'link': 'https://www.amazon.com/Linux-Command-Shell-Scripting-Bible/dp/111898384X'}
             ],
             'Intro to Python and MySQL': [
-                {'type': 'W3Schools', 'title': 'Python MySQL Tutorial', 'title': 'Python MySQL Tutorial', 'link': 'https://www.w3schools.com/python/python_mysql_getstarted.asp'},
-                {'type': 'YouTube', 'title': 'Python MySQL Tutorial for Beginners', 'link': 'https://www.youtube.com/watch?v=3vsc1l9kYI'},
+                {'type': 'W3Schools', 'title': 'Python MySQL Tutorial', 'link': 'https://www.w3schools.com/python/python_mysql_getstarted.asp'},
+                {'type': 'YouTube', 'title': 'Python MySQL Tutorial for Beginners', 'link': 'https://www.youtube.com/watch?v=3vsC1l19kYI'},
                 {'type': 'Book', 'title': 'Python Programming for Beginners', 'link': 'https://www.amazon.com/Python-Programming-Beginners-Introduction-Applications/dp/1731030835'}
             ],
             'Object-Oriented Programming': [
@@ -163,9 +186,9 @@ class RegistrationService:
                 {'type': 'Book', 'title': 'Head First Design Patterns', 'link': 'https://www.amazon.com/Head-First-Design-Patterns-Brain-Friendly/dp/0596007124'}
             ],
             'Intro to Web Infra': [
-                {'type': 'Web', 'title': 'Web Development Tutorial', 'link': 'https://www.w3schools.com/html/'},
-                {'type': 'YouTube', 'title': 'Web Infrastructure Fundamentals', 'https': 'https://www.youtube.com/watch?v=3RiHcgCrqbI'},
-                {'type': 'Book', 'title': 'Web Scalability for Startup Engineers', 'https': 'https://www.amazon.com/Web-Scalability-Engineers-Artur/dp/0071842837'},
+                {'type': 'W3Schools', 'title': 'Web Development Tutorial', 'link': 'https://www.w3schools.com/html/'},
+                {'type': 'YouTube', 'title': 'Web Infrastructure Fundamentals', 'link': 'https://www.youtube.com/watch?v=3RiHcgCrqbI'},
+                {'type': 'Book', 'title': 'Web Scalability for Startup Engineers', 'link': 'https://www.amazon.com/Web-Scalability-Startup-Engineers-Artur/dp/0071842837'}
             ],
             'Data Structures and Algorithms': [
                 {'type': 'W3Schools', 'title': 'Python Data Structures', 'link': 'https://www.w3schools.com/python/python_lists.asp'},
