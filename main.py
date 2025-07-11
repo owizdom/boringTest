@@ -130,6 +130,8 @@ def main():
             print(f"Error adding student: {e}")
             continue
 
+    
+
         grades = {}
         print("\nAvailable courses:")
         print("1. Intro to Shell and Linux Scripting")
