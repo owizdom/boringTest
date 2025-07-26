@@ -1,10 +1,14 @@
-# database/db_connect.py
 import mysql.connector
 from mysql.connector import Error
 
+# Download the CA certificate from your Aiven service overview page in the Aiven Console
+# (under Connection information > Download CA certificate) and save it as 'ca.pem'
+# in the same directory as this script. This enables SSL verification for secure connection.
+
 class Database:
-    def __init__(self, host="localhost", user="root", password="BatmanGokuSuper@12", database="smartreg"):
+    def __init__(self, host="mysql-3cc1879-gokun4621-314a.f.aivencloud.com", port=19778, user="avnadmin", password="AVNS_0F1Eo6kQc5K4kBQaQMI", database="defaultdb"):
         self.host = host
+        self.port = port
         self.user = user
         self.password = password
         self.database = database
@@ -13,23 +17,16 @@ class Database:
 
     def initialize_database(self):
         try:
-            # Connect without specifying database to create smartreg
-            temp_conn = mysql.connector.connect(
-                host=self.host,
-                user=self.user,
-                password=self.password
-            )
-            cursor = temp_conn.cursor()
-            cursor.execute("CREATE DATABASE IF NOT EXISTS smartreg")
-            cursor.close()
-            temp_conn.close()
-
-            # Connect to smartreg
+            # Connect directly to the existing database
             self.connection = mysql.connector.connect(
                 host=self.host,
+                port=self.port,
                 user=self.user,
                 password=self.password,
-                database=self.database
+                database=self.database,
+                ssl_ca='ca.pem',
+                ssl_verify_cert=True,
+                use_pure=True
             )
             cursor = self.connection.cursor()
 
